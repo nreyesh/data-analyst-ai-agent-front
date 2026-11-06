@@ -36,7 +36,6 @@ jobs:
           fi
 
       # 2. Keyless Authentication to Google Cloud via Workload Identity Federation
-      # (Uses the Deployer SA: terraform-dev-sa)
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v2
         with:
@@ -72,7 +71,6 @@ jobs:
           docker push "us-central1-docker.pkg.dev/${{ steps.set_env.outputs.project_id }}/building-analytics-repo-${{ steps.set_env.outputs.env }}/building-analytics-front:latest"
 
       # 7. Deploy new Revision to Cloud Run
-      # (Attaches the Worker/Runner SA; secrets and environment are managed via Terraform)
       - name: Deploy to Cloud Run
         env:
           ENV: ${{ steps.set_env.outputs.env }}

@@ -1,9 +1,13 @@
-# Sistema de Inteligencia Financiera de Condominios 🏢📊
+# Building Analytics
 
-Bienvenido al asistente conversacional de **Gastos Comunes** de Edificios Sierra Plaza.
+Bienvenido al **Portal de Inteligencia y Análisis Financiero de la Comunidad**.
 
-### 🔒 Privacidad y Sesión Efímera
-- **Cero retención de historial**: Tus consultas viven únicamente en memoria RAM durante tu sesión activa. Al cerrar la pestaña, la conversación se elimina por completo.
-- **Aislamiento por Rol**:
-  - **Residente**: Acceso directo a la nota de cobro, consumos medidos y evolución de tu departamento asignado, además de los totales generales del edificio.
-  - **Administración / Comité**: Acceso integral a informes macro, análisis entre unidades y diagnóstico del sistema.
+---
+
+### ¿En qué puedo asistirte hoy?
+
+* 🔍 **Consulta de Gastos por Unidad o Edificio:** Revisa el detalle y desglose de gastos comunes de tu departamento o de la comunidad para un mes o período específico.
+* 📈 **Evolución Histórica de Gastos:** Analiza tendencias y variaciones de costos a lo largo del tiempo para identificar patrones de gasto.
+* 🧠 **Análisis Financiero Profundo:** Realiza consultas analíticas avanzadas para entender el comportamiento y distribución de los gastos del edificio.
+
+> *La información proviene directamente de los registros de gastos mensuales consolidados de la comunidad.*

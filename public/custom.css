@@ -1,0 +1,152 @@
+/* ==========================================================================
+   Building Analytics — Institutional Ledger Theme
+   Palette: Deep Obsidian (#080C14), Slate Surface (#111827), Mint Audit (#00E599)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --ba-bg: #080C14;
+  --ba-surface: #111827;
+  --ba-surface-hover: #1E293B;
+  --ba-border: #1E293B;
+  --ba-border-active: #00E599;
+  --ba-primary: #00E599;
+  --ba-primary-hover: #00FFAB;
+  --ba-primary-glow: rgba(0, 229, 153, 0.15);
+  --ba-text-main: #F8FAFC;
+  --ba-text-muted: #94A3B8;
+  --ba-danger: #EF4444;
+}
+
+/* Global Font & Rendering */
+body, * {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular figures for numbers, currency, and unit codes */
+code, pre, .tabular-numbers, [data-testid*="number"] {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Background Atmosphere: Deep Obsidian with subtle top architectural glow */
+body, #root {
+  background-color: var(--ba-bg) !important;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 229, 153, 0.05), transparent 70%),
+    radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.03), transparent 40%) !important;
+  color: var(--ba-text-main) !important;
+}
+
+/* Header & Brand Navbar */
+header, nav {
+  background: rgba(11, 15, 25, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--ba-border) !important;
+}
+
+/* Replace Chainlit Logo Icon with Architectural Hexagon Emblem */
+header svg, .chainlit-logo svg {
+  fill: var(--ba-primary) !important;
+  filter: drop-shadow(0 0 8px var(--ba-primary-glow));
+}
+
+/* Login Page Container */
+.login-container, [data-testid="login-container"] {
+  background-color: transparent !important;
+}
+
+/* Login Card Elevation */
+form, .login-box, [data-testid="login-box"] {
+  background: var(--ba-surface) !important;
+  border: 1px solid var(--ba-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  padding: 2.5rem !important;
+}
+
+/* Main Heading inside Login */
+h1, h2, .login-title {
+  color: var(--ba-text-main) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Subtitle description */
+.login-subtitle, p {
+  color: var(--ba-text-muted) !important;
+}
+
+/* Input Fields (Email & Password) */
+input[type="text"], input[type="email"], input[type="password"] {
+  background-color: #0B0F19 !important;
+  border: 1px solid var(--ba-border) !important;
+  border-radius: 8px !important;
+  color: var(--ba-text-main) !important;
+  font-size: 0.95rem !important;
+  padding: 0.75rem 1rem !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+  border-color: var(--ba-border-active) !important;
+  box-shadow: 0 0 0 3px var(--ba-primary-glow) !important;
+  outline: none !important;
+}
+
+/* Labels */
+label {
+  color: var(--ba-text-muted) !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem !important;
+}
+
+/* Primary Button: Disruptive Mint Audit (No more hot pink!) */
+button[type="submit"], .cl-button-primary, [data-testid="login-button"] {
+  background-color: var(--ba-primary) !important;
+  color: #080C14 !important; /* Dark obsidian text for maximum contrast & crispness */
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  border: none !important;
+  padding: 0.8rem 1.5rem !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: 0 4px 14px rgba(0, 229, 153, 0.3) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+}
+
+button[type="submit"]:hover, .cl-button-primary:hover, [data-testid="login-button"]:hover {
+  background-color: var(--ba-primary-hover) !important;
+  box-shadow: 0 6px 20px rgba(0, 229, 153, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+button[type="submit"]:active, .cl-button-primary:active {
+  transform: translateY(0) !important;
+}
+
+/* Error Messages */
+.error, [data-testid*="error"], .text-red-500 {
+  color: var(--ba-danger) !important;
+  font-size: 0.85rem !important;
+  margin-top: 0.25rem !important;
+}
+
+/* Chat Input Bar & Action Buttons */
+.chat-input, [data-testid="chat-input"] {
+  background: var(--ba-surface) !important;
+  border: 1px solid var(--ba-border) !important;
+  border-radius: 12px !important;
+}
+
+/* Step / Thinking / Supervisor Badges */
+.cl-step {
+  border-left: 2px solid var(--ba-primary) !important;
+  background: rgba(17, 24, 39, 0.6) !important;
+  border-radius: 0 8px 8px 0 !important;
+}
