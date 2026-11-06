@@ -1,0 +1,20 @@
+# ==============================================================================
+# Development Environment Profile (DEV)
+# ==============================================================================
+environment: "dev"
+
+backend:
+  # In Cloud Run, internal traffic routes to the dev backend service
+  # Fallback to localhost:8000 when running locally
+  url: "https://building-analytics-backend-dev.a.run.app"
+  local_fallback_url: "http://localhost:8000"
+
+firebase:
+  project_id: "building-analytics-dev-513719"
+  auth_domain: "building-analytics-dev-513719.firebaseapp.com"
+  # Web API Key is injected via FIREBASE_WEB_API_KEY environment variable / Secret Manager
+
+auth:
+  # In dev, allow fallback mock accounts if Firebase API key is not yet configured locally
+  allow_dev_mock_accounts: true
+  session_timeout_minutes: 60

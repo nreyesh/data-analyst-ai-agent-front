@@ -1,0 +1,17 @@
+# ==============================================================================
+# Production Environment Profile (PROD)
+# ==============================================================================
+environment: "prod"
+
+backend:
+  # Production Cloud Run Backend service URL
+  url: "https://building-analytics-backend-prod.a.run.app"
+
+firebase:
+  project_id: "building-analytics-prod"
+  auth_domain: "building-analytics-prod.firebaseapp.com"
+
+auth:
+  # In production, mock accounts are STRICTLY disabled
+  allow_dev_mock_accounts: false
+  session_timeout_minutes: 30
