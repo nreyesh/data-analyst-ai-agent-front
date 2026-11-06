@@ -20,14 +20,17 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# 4. Copy the frontend application code
-COPY . /app/front
+# 4. Copy the frontend application code directly into /app
+COPY . /app
 
-# 5. Tell Python that /app is in the Python module search path
+# 5. Create symlink so 'from front.xxx import' continues to resolve seamlessly
+RUN ln -s /app /app/front
+
+# 6. Tell Python that /app is in the Python module search path
 ENV PYTHONPATH=/app
 
-# 6. Expose the port (informative documentation for container runners)
+# 7. Expose the port (informative documentation for container runners)
 EXPOSE 8080
 
-# 7. Start Chainlit listening on 0.0.0.0 and port 8080 (Cloud Run requirement)
-CMD ["sh", "-c", "chainlit run front/app.py --host 0.0.0.0 --port ${PORT} --headless"]
+# 8. Start Chainlit from /app where .chainlit and public/ live
+CMD ["sh", "-c", "chainlit run app.py --host 0.0.0.0 --port ${PORT} --headless"]
