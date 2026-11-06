@@ -1,152 +1,161 @@
 /* ==========================================================================
-   Building Analytics — Institutional Ledger Theme
-   Palette: Deep Obsidian (#080C14), Slate Surface (#111827), Mint Audit (#00E599)
+   COMUNIDAD SIERRA PLAZA — "INSTITUTIONAL LEDGER" DESIGN SYSTEM (Chainlit 2.x)
+   Aesthetic Direction: High-Trust Financial Intelligence & Disruptive PropTech
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
-:root {
-  --ba-bg: #080C14;
-  --ba-surface: #111827;
-  --ba-surface-hover: #1E293B;
-  --ba-border: #1E293B;
-  --ba-border-active: #00E599;
-  --ba-primary: #00E599;
-  --ba-primary-hover: #00FFAB;
-  --ba-primary-glow: rgba(0, 229, 153, 0.15);
-  --ba-text-main: #F8FAFC;
-  --ba-text-muted: #94A3B8;
-  --ba-danger: #EF4444;
+:root,
+.dark {
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  --font-mono: 'JetBrains Mono', monospace !important;
+
+  /* Shadcn/Tailwind HSL Tokens — Institutional Ledger Palette */
+  --background: 220 43% 5% !important;           /* #080C14 Deep Obsidian */
+  --foreground: 214 32% 97% !important;          /* #F3F6FA Crisp Ledger White */
+  --card: 221 39% 11% !important;                /* #111827 Elevated Slate */
+  --card-foreground: 214 32% 97% !important;
+  --popover: 221 39% 11% !important;
+  --popover-foreground: 214 32% 97% !important;
+
+  /* Disruptive PropTech Mint Audit Emerald (#00E599) */
+  --primary: 160 100% 45% !important;            /* #00E599 Phosphor Emerald */
+  --primary-foreground: 222 84% 4% !important;   /* #020806 Deep Contrast Ink */
+
+  --secondary: 217 33% 15% !important;
+  --secondary-foreground: 214 32% 97% !important;
+  --muted: 220 38% 8% !important;
+  --muted-foreground: 215 16% 65% !important;
+  --accent: 217 33% 16% !important;
+  --accent-foreground: 214 32% 97% !important;
+  --destructive: 0 84% 60% !important;
+  --destructive-foreground: 210 40% 98% !important;
+
+  --border: 217 24% 18% !important;
+  --input: 217 24% 18% !important;
+  --ring: 160 100% 45% !important;
+  --radius: 0.625rem !important;
+
+  --sidebar-background: 222 47% 4% !important;
+  --sidebar-foreground: 214 32% 97% !important;
+  --sidebar-primary: 160 100% 45% !important;
+  --sidebar-primary-foreground: 222 84% 4% !important;
+  --sidebar-accent: 221 39% 11% !important;
+  --sidebar-accent-foreground: 214 32% 97% !important;
+  --sidebar-border: 217 24% 14% !important;
+  --sidebar-ring: 160 100% 45% !important;
 }
 
-/* Global Font & Rendering */
-body, * {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+/* 1. Global Atmosphere & Architectural Grid */
+html,
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background-color: #080C14 !important;
+  color: #F3F6FA !important;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(0, 229, 153, 0.08) 0%, transparent 42%),
+    radial-gradient(circle at 82% 88%, rgba(56, 189, 248, 0.06) 0%, transparent 45%),
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+  background-attachment: fixed !important;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Tabular figures for numbers, currency, and unit codes */
-code, pre, .tabular-numbers, [data-testid*="number"] {
-  font-family: 'JetBrains Mono', monospace !important;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Background Atmosphere: Deep Obsidian with subtle top architectural glow */
-body, #root {
-  background-color: var(--ba-bg) !important;
-  background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 229, 153, 0.05), transparent 70%),
-    radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.03), transparent 40%) !important;
-  color: var(--ba-text-main) !important;
-}
-
-/* Header & Brand Navbar */
-header, nav {
-  background: rgba(11, 15, 25, 0.75) !important;
-  backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid var(--ba-border) !important;
-}
-
-/* Replace Chainlit Logo Icon with Architectural Hexagon Emblem */
-header svg, .chainlit-logo svg {
-  fill: var(--ba-primary) !important;
-  filter: drop-shadow(0 0 8px var(--ba-primary-glow));
-}
-
-/* Login Page Container */
-.login-container, [data-testid="login-container"] {
-  background-color: transparent !important;
-}
-
-/* Login Card Elevation */
-form, .login-box, [data-testid="login-box"] {
-  background: var(--ba-surface) !important;
-  border: 1px solid var(--ba-border) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
-  padding: 2.5rem !important;
-}
-
-/* Main Heading inside Login */
-h1, h2, .login-title {
-  color: var(--ba-text-main) !important;
-  font-weight: 700 !important;
+/* 2. Headings & Editorial Typography */
+h1, h2, h3, h4,
+.text-2xl.font-bold {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   letter-spacing: -0.025em !important;
+  color: #F3F6FA !important;
 }
 
-/* Subtitle description */
-.login-subtitle, p {
-  color: var(--ba-text-muted) !important;
+/* 3. Brand Logo Sizing */
+img.logo {
+  height: 38px !important;
+  width: auto !important;
+  max-width: 260px !important;
 }
 
-/* Input Fields (Email & Password) */
-input[type="text"], input[type="email"], input[type="password"] {
-  background-color: #0B0F19 !important;
-  border: 1px solid var(--ba-border) !important;
-  border-radius: 8px !important;
-  color: var(--ba-text-main) !important;
-  font-size: 0.95rem !important;
-  padding: 0.75rem 1rem !important;
-  transition: all 0.2s ease-in-out !important;
-}
-
-input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
-  border-color: var(--ba-border-active) !important;
-  box-shadow: 0 0 0 3px var(--ba-primary-glow) !important;
-  outline: none !important;
-}
-
-/* Labels */
-label {
-  color: var(--ba-text-muted) !important;
-  font-size: 0.85rem !important;
-  font-weight: 500 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.4rem !important;
-}
-
-/* Primary Button: Disruptive Mint Audit (No more hot pink!) */
-button[type="submit"], .cl-button-primary, [data-testid="login-button"] {
-  background-color: var(--ba-primary) !important;
-  color: #080C14 !important; /* Dark obsidian text for maximum contrast & crispness */
+/* 4. Primary Action Buttons (Login "Ingresar al Portal" & Send Buttons) */
+button.bg-primary,
+button[type="submit"] {
+  background: linear-gradient(135deg, #00E599 0%, #059669 100%) !important;
+  color: #03110B !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   font-weight: 700 !important;
-  border-radius: 8px !important;
-  border: none !important;
-  padding: 0.8rem 1.5rem !important;
-  letter-spacing: -0.01em !important;
-  box-shadow: 0 4px 14px rgba(0, 229, 153, 0.3) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  cursor: pointer !important;
+  letter-spacing: 0.01em !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(0, 229, 153, 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-button[type="submit"]:hover, .cl-button-primary:hover, [data-testid="login-button"]:hover {
-  background-color: var(--ba-primary-hover) !important;
-  box-shadow: 0 6px 20px rgba(0, 229, 153, 0.45) !important;
+button.bg-primary:hover,
+button[type="submit"]:hover {
+  background: linear-gradient(135deg, #34D399 0%, #00E599 100%) !important;
+  box-shadow: 0 6px 26px rgba(0, 229, 153, 0.4) !important;
   transform: translateY(-1px) !important;
 }
 
-button[type="submit"]:active, .cl-button-primary:active {
-  transform: translateY(0) !important;
+/* 5. Input Fields (Login Email/Password & Chat Prompt) */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+textarea {
+  background-color: rgba(17, 24, 39, 0.85) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  color: #F3F6FA !important;
+  border-radius: 10px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-/* Error Messages */
-.error, [data-testid*="error"], .text-red-500 {
-  color: var(--ba-danger) !important;
-  font-size: 0.85rem !important;
-  margin-top: 0.25rem !important;
+input:focus,
+textarea:focus {
+  border-color: #00E599 !important;
+  box-shadow: 0 0 0 2px rgba(0, 229, 153, 0.2) !important;
+  outline: none !important;
 }
 
-/* Chat Input Bar & Action Buttons */
-.chat-input, [data-testid="chat-input"] {
-  background: var(--ba-surface) !important;
-  border: 1px solid var(--ba-border) !important;
-  border-radius: 12px !important;
+/* 6. Financial Tables & Monospace Numbers */
+code, pre, table td {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
-/* Step / Thinking / Supervisor Badges */
-.cl-step {
-  border-left: 2px solid var(--ba-primary) !important;
-  background: rgba(17, 24, 39, 0.6) !important;
-  border-radius: 0 8px 8px 0 !important;
+table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  background: rgba(17, 24, 39, 0.78) !important;
+}
+
+table th {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #00E599 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+table td {
+  padding: 10px 16px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08) !important;
+  color: #F3F6FA !important;
+}
+
+table tr:hover td {
+  background: rgba(0, 229, 153, 0.05) !important;
+}
+
+/* 7. Hide Chainlit Watermark Footer */
+.watermark,
+a[href*="chainlit.io"] {
+  display: none !important;
 }

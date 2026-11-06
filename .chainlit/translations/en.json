@@ -1,0 +1,214 @@
+{
+    "common": {
+        "actions": {
+            "cancel": "Cancelar",
+            "confirm": "Confirmar",
+            "continue": "Continuar",
+            "goBack": "Volver",
+            "reset": "Restablecer",
+            "submit": "Enviar"
+        },
+        "status": {
+            "loading": "Cargando información...",
+            "error": {
+                "default": "Ocurrió un error al procesar la solicitud",
+                "serverConnection": "No se pudo conectar con el servidor"
+            }
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Portal de Transparencia Financiera",
+            "form": {
+                "email": {
+                    "label": "Correo electrónico",
+                    "required": "El correo electrónico es requerido"
+                },
+                "password": {
+                    "label": "Contraseña",
+                    "required": "La contraseña es requerida"
+                },
+                "actions": {
+                    "signin": "Ingresar al Portal"
+                },
+                "alternativeText": {
+                    "or": "O"
+                }
+            },
+            "errors": {
+                "default": "No fue posible iniciar sesión",
+                "signin": "Credenciales inválidas. Verifique sus datos",
+                "oauthSignin": "Intente iniciar sesión con otra cuenta",
+                "redirectUriMismatch": "Error de configuración de redirección",
+                "oauthCallback": "Error de autenticación",
+                "oauthCreateAccount": "Error al crear la cuenta",
+                "emailCreateAccount": "Error al registrar correo",
+                "callback": "Error en el retorno de autenticación",
+                "oauthAccountNotLinked": "Inicie sesión con el método original",
+                "emailSignin": "No se pudo enviar el correo de acceso",
+                "emailVerify": "Verifique su correo para continuar",
+                "credentialsSignin": "Correo o contraseña incorrectos. Verifique sus datos",
+                "sessionRequired": "Inicie sesión para acceder al sistema"
+            }
+        },
+        "provider": {
+            "continue": "Continuar con {{provider}}"
+        }
+    },
+    "chat": {
+        "input": {
+            "placeholder": "Consulte sobre gastos comunes, comparativas mensuales o su unidad...",
+            "actions": {
+                "send": "Enviar consulta",
+                "stop": "Detener respuesta",
+                "attachFiles": "Adjuntar archivo"
+            }
+        },
+        "speech": {
+            "start": "Iniciar grabación",
+            "stop": "Detener grabación",
+            "connecting": "Conectando..."
+        },
+        "fileUpload": {
+            "dragDrop": "Arrastre y suelte archivos aquí",
+            "browse": "Examinar archivos",
+            "sizeLimit": "Límite:",
+            "errors": {
+                "failed": "Error al subir archivo",
+                "cancelled": "Carga cancelada"
+            }
+        },
+        "messages": {
+            "status": {
+                "using": "Consultando",
+                "used": "Analizado"
+            },
+            "actions": {
+                "copy": {
+                    "button": "Copiar respuesta",
+                    "success": "¡Copiado al portapapeles!"
+                }
+            },
+            "feedback": {
+                "positive": "Información útil",
+                "negative": "Información no útil",
+                "edit": "Editar comentario",
+                "dialog": {
+                    "title": "Agregar comentario",
+                    "submit": "Enviar comentario"
+                },
+                "status": {
+                    "updating": "Actualizando...",
+                    "updated": "Comentario guardado"
+                }
+            }
+        },
+        "history": {
+            "title": "Consultas recientes",
+            "empty": "Sin consultas previas",
+            "show": "Ver historial"
+        },
+        "settings": {
+            "title": "Configuración"
+        },
+        "watermark": "Asistente de consulta financiera. Verifique los antecedentes contables oficiales."
+    },
+    "threadHistory": {
+        "sidebar": {
+            "title": "Historial de Análisis",
+            "filters": {
+                "search": "Buscar",
+                "placeholder": "Buscar en análisis previos..."
+            },
+            "timeframes": {
+                "today": "Hoy",
+                "yesterday": "Ayer",
+                "previous7days": "Últimos 7 días",
+                "previous30days": "Últimos 30 días"
+            },
+            "empty": "No hay conversaciones previas",
+            "actions": {
+                "close": "Cerrar panel lateral",
+                "open": "Abrir panel lateral"
+            }
+        },
+        "thread": {
+            "untitled": "Análisis sin título",
+            "menu": {
+                "rename": "Renombrar",
+                "delete": "Eliminar"
+            },
+            "actions": {
+                "delete": {
+                    "title": "Confirmar eliminación",
+                    "description": "Esta acción eliminará el análisis y no se puede deshacer.",
+                    "success": "Análisis eliminado",
+                    "inProgress": "Eliminando análisis..."
+                },
+                "rename": {
+                    "title": "Renombrar Análisis",
+                    "description": "Ingrese un nuevo nombre para esta conversación",
+                    "form": {
+                        "name": {
+                            "label": "Nombre",
+                            "placeholder": "Ej: Gastos Comunes Marzo 2024"
+                        }
+                    },
+                    "success": "Análisis renombrado",
+                    "inProgress": "Renombrando..."
+                }
+            }
+        }
+    },
+    "navigation": {
+        "header": {
+            "chat": "Consulta",
+            "readme": "Guía y Alcance",
+            "theme": {
+                "light": "Tema Claro",
+                "dark": "Tema Oscuro",
+                "system": "Automático"
+            }
+        },
+        "newChat": {
+            "button": "Nueva Consulta",
+            "dialog": {
+                "title": "Iniciar Nueva Consulta",
+                "description": "¿Desea iniciar una nueva sesión de consulta financiera?",
+                "tooltip": "Nueva Consulta"
+            }
+        },
+        "user": {
+            "menu": {
+                "settings": "Configuración",
+                "settingsKey": "S",
+                "apiKeys": "Claves de API",
+                "logout": "Cerrar sesión"
+            }
+        }
+    },
+    "apiKeys": {
+        "title": "Claves requeridas",
+        "description": "Claves de acceso almacenadas localmente en su dispositivo.",
+        "success": {
+            "saved": "Guardado exitosamente"
+        }
+    },
+    "alerts": {
+        "info": "Información",
+        "note": "Nota",
+        "tip": "Consejo",
+        "important": "Importante",
+        "warning": "Atención",
+        "caution": "Precaución",
+        "debug": "Depuración",
+        "example": "Ejemplo",
+        "success": "Correcto",
+        "help": "Ayuda",
+        "idea": "Sugerencia",
+        "pending": "Pendiente",
+        "security": "Seguridad",
+        "beta": "Versión Preliminar",
+        "best-practice": "Recomendación"
+    }
+}

@@ -12,8 +12,15 @@ env/
 venv/
 ENV/
 
-# Chainlit internal data & uploads
-.chainlit/
+# Chainlit internal cache & generated locales
+.chainlit/.langchain.db
+.files/
+
+# Ignore automatically-generated translation files from Chainlit (keep only our custom Spanish ones)
+.chainlit/translations/*
+!.chainlit/translations/es.json
+!.chainlit/translations/en-US.json
+!.chainlit/translations/en.json
 
 # IDE & OS files
 .vscode/

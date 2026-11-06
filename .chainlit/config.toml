@@ -1,0 +1,72 @@
+[project]
+# List of environment variables to be provided by each user to use the app.
+user_env = []
+
+# Duration (in seconds) during which the session is saved when the connection is lost
+session_timeout = 3600
+
+# Duration (in seconds) of the user session expiry
+user_session_timeout = 1296000  # 15 days
+
+# Enable third parties caching (e.g., LangChain cache)
+cache = false
+
+# Authorized origins
+allow_origins = ["*"]
+
+[features]
+unsafe_allow_html = false
+latex = false
+user_message_autoscroll = true
+auto_tag_thread = true
+edit_message = true
+
+[features.spontaneous_file_upload]
+    enabled = false
+    accept = ["*/*"]
+    max_files = 20
+    max_size_mb = 500
+
+[features.audio]
+    enabled = false
+    sample_rate = 24000
+
+[features.mcp.sse]
+    enabled = true
+
+[features.mcp.stdio]
+    enabled = true
+    allowed_executables = [ "npx", "uvx" ]
+
+[UI]
+# Nombre formal del portal institucional
+name = "Comunidad Sierra Plaza"
+
+# Descripción institucional
+description = "Portal de Consulta y Transparencia Financiera de Gastos Comunes - Comunidad Sierra Plaza"
+
+# Tema sobrio por defecto
+default_theme = "dark"
+
+# Disposición visual amplia
+layout = "wide"
+
+# Panel lateral abierto para acceso directo al historial de consultas
+default_sidebar_state = "open"
+
+# Modo de razonamiento
+cot = "tool_call"
+
+# Hoja de estilos personalizada
+custom_css = "/public/custom.css"
+
+# Estilo formal de alertas
+alert_style = "modern"
+
+# Imagen institucional de bienvenida / acceso
+login_page_image = "/public/login-hero.svg"
+login_page_image_filter = "brightness-100"
+login_page_image_dark_filter = "brightness-100"
+
+[meta]
+generated_by = "2.6.3"

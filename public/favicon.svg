@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#0B1120"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12.5" stroke="#00E599" stroke-opacity="0.4" stroke-width="3"/>
+  <!-- Architectural Towers / Financial Bars -->
+  <rect x="14" y="32" width="8" height="18" rx="2" fill="#059669"/>
+  <rect x="28" y="22" width="8" height="28" rx="2" fill="#10B981"/>
+  <rect x="42" y="14" width="8" height="36" rx="2" fill="#00E599"/>
+  <!-- Trend Ledger Line -->
+  <path d="M14 26L28 16L46 10" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="46" cy="10" r="3.5" fill="#00E599"/>
+</svg>
