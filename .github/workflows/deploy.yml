@@ -72,7 +72,7 @@ jobs:
           docker push "us-central1-docker.pkg.dev/${{ steps.set_env.outputs.project_id }}/building-analytics-repo-${{ steps.set_env.outputs.env }}/building-analytics-front:latest"
 
       # 7. Deploy new Revision to Cloud Run
-      # (Attaches the Worker/Runner SA: building-analytics-runner-dev)
+/      # (Attaches the Worker/Runner SA; secrets and environment are managed via Terraform)
       - name: Deploy to Cloud Run
         env:
           ENV: ${{ steps.set_env.outputs.env }}
@@ -84,6 +84,4 @@ jobs:
             --region="us-central1" \
             --project="${PROJECT_ID}" \
             --service-account="${RUNNER_SA}" \
-            --set-env-vars="ENVIRONMENT=${ENV}" \
-            --allow-unauthenticated \
             --quiet
