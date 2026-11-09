@@ -7,11 +7,13 @@ from front.api_client import call_backend_supervisor_turn
 from front.auth import verify_user_credentials, request_password_reset
 
 import asyncio
+from collections import defaultdict
 import inspect
 import logging
 from pathlib import Path
 import re
 import sys
+import time
 from typing import Any, Callable
 
 # Ensure repository root is on sys.path
@@ -21,6 +23,40 @@ if _PROJECT_ROOT not in sys.path:
 
 
 logger = logging.getLogger("front.app")
+
+# ============================================================================
+# Sliding-Window Rate Limiter (Safety & Abuse Prevention)
+# ============================================================================
+
+# Maximum 10 questions per 60-second window per user
+RATE_LIMIT_MAX_REQUESTS = 10
+RATE_LIMIT_WINDOW_SECONDS = 60.0
+
+# In-memory sliding window: mapping of user_uid -> list of timestamps (float)
+_USER_REQUEST_TIMESTAMPS: dict[str, list[float]] = defaultdict(list)
+
+
+def check_rate_limit(user_uid: str) -> tuple[bool, int]:
+    """Evaluate sliding-window rate limit for a user.
+
+    Returns:
+        (allowed: bool, retry_after_seconds: int)
+    """
+    now = time.time()
+    cutoff = now - RATE_LIMIT_WINDOW_SECONDS
+    timestamps = _USER_REQUEST_TIMESTAMPS[user_uid]
+
+    # Filter out timestamps older than the sliding window
+    _USER_REQUEST_TIMESTAMPS[user_uid] = [t for t in timestamps if t > cutoff]
+    recent_count = len(_USER_REQUEST_TIMESTAMPS[user_uid])
+
+    if recent_count >= RATE_LIMIT_MAX_REQUESTS:
+        oldest_in_window = _USER_REQUEST_TIMESTAMPS[user_uid][0]
+        retry_after = max(1, int(oldest_in_window + RATE_LIMIT_WINDOW_SECONDS - now))
+        return False, retry_after
+
+    _USER_REQUEST_TIMESTAMPS[user_uid].append(now)
+    return True, 0
 
 
 # ============================================================================
@@ -425,6 +461,17 @@ async def on_message(
     prior_messages = cl.user_session.get("messages") or []
     focus = cl.user_session.get("focus") or FocusContext()
     user_text = getattr(message, "content", str(message)).strip()
+
+    # Rate limiting: evaluate 10 questions/minute sliding window per user
+    allowed, retry_after = check_rate_limit(user_ctx.uid)
+    if not allowed:
+        warning_msg = (
+            f"⏱️ **Límite de consultas alcanzado.**\n\n"
+            f"Por razones de seguridad y estabilidad del servicio, el sistema permite un máximo de "
+            f"**{RATE_LIMIT_MAX_REQUESTS} preguntas por minuto**.\n\n"
+            f"Por favor espera **{retry_after} segundos** antes de enviar tu próxima consulta."
+        )
+        return await cl.Message(content=warning_msg).send()
 
     runner = supervisor_runner or call_backend_supervisor_turn
 
