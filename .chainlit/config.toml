@@ -60,6 +60,9 @@ cot = "tool_call"
 # Hoja de estilos personalizada
 custom_css = "/public/custom.css"
 
+# Script personalizado para interacción y recuperación de contraseña
+custom_js = "/public/custom.js"
+
 # Estilo formal de alertas
 alert_style = "modern"
 

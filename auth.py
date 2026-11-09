@@ -15,26 +15,27 @@ logger = logging.getLogger("front.auth")
 
 FIREBASE_SIGNIN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 FIREBASE_LOOKUP_URL = "https://identitytoolkit.googleapis.com/v1/accounts:lookup"
+FIREBASE_RESET_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobConfirmationCode"
 
 # Default local development / smoke-test accounts (server-side only; never exposed to client override)
 DEFAULT_DEV_ACCOUNTS: dict[str, dict[str, Any]] = {
-    "admin@condominio.cl": {
+    "admin@sierraplaza.cl": {
         "uid": "uid_admin_001",
-        "password": os.environ.get("DEV_ADMIN_PASSWORD", "admin123"),
+        "password": os.environ.get("DEV_ADMIN_PASSWORD", "SierraPlaza2026!"),
         "role": "admin",
         "unit_code": None,
     },
-    "residente504b@condominio.cl": {
-        "uid": "uid_res_504b",
-        "password": os.environ.get("DEV_RESIDENT_PASSWORD", "residente123"),
+    "residente504@sierraplaza.cl": {
+        "uid": "uid_res_504",
+        "password": os.environ.get("DEV_RESIDENT_PASSWORD", "SierraPlaza2026!"),
         "role": "resident",
-        "unit_code": "B-504",
+        "unit_code": "504",
     },
-    "residente102a@condominio.cl": {
-        "uid": "uid_res_102a",
-        "password": os.environ.get("DEV_RESIDENT_PASSWORD", "residente123"),
+    "residente101@sierraplaza.cl": {
+        "uid": "uid_res_101",
+        "password": os.environ.get("DEV_RESIDENT_PASSWORD", "SierraPlaza2026!"),
         "role": "resident",
-        "unit_code": "A-102",
+        "unit_code": "101",
     },
 }
 
@@ -55,23 +56,60 @@ def _load_server_role_directory() -> dict[str, dict[str, Any]]:
     return directory
 
 
+def request_password_reset(
+    email: str,
+    firebase_api_key: str | None = None,
+    http_client: Any | None = None,
+) -> tuple[bool, str]:
+    """Trigger an official password reset email via Firebase Identity Toolkit.
+
+    Args:
+        email: User email requesting reset.
+        firebase_api_key: Optional API key override (defaults to FIREBASE_API_KEY env var).
+        http_client: Optional HTTP client for testing.
+
+    Returns:
+        (success: bool, message: str)
+    """
+    clean_email = (email or "").strip().lower()
+    if not clean_email or "@" not in clean_email:
+        return False, "Por favor ingrese un correo electrónico válido."
+
+    api_key = firebase_api_key if firebase_api_key is not None else os.environ.get("FIREBASE_API_KEY")
+    if not api_key:
+        logger.info("Local dev password reset simulated for '%s'", clean_email)
+        return True, "Si el correo está registrado en la Comunidad Sierra Plaza, recibirá un enlace para restablecer su contraseña."
+
+    http_post = http_client.post if http_client is not None else requests.post
+    try:
+        res = http_post(
+            f"{FIREBASE_RESET_PASSWORD_URL}?key={api_key}",
+            json={
+                "requestType": "PASSWORD_RESET",
+                "email": clean_email,
+            },
+            timeout=5.0,
+        )
+        if res.status_code == 200:
+            return True, "Se ha enviado un correo con las instrucciones para restablecer su contraseña. Por favor revise su bandeja de entrada o spam."
+        else:
+            err_data = res.json() if res.content else {}
+            err_msg = err_data.get("error", {}).get("message", "UNKNOWN_ERROR")
+            logger.warning("Firebase password reset failed for '%s': %s", clean_email, err_msg)
+            # For security and privacy, avoid revealing if an email exists
+            return True, "Si el correo está registrado en la Comunidad Sierra Plaza, recibirá un enlace para restablecer su contraseña."
+    except Exception as exc:
+        logger.error("Error connecting to Firebase for password reset: %s", exc)
+        return False, "Error al procesar la solicitud. Por favor intente más tarde."
+
+
 def verify_user_credentials(
     username: str,
     password: str,
     firebase_api_key: str | None = None,
     http_client: Any | None = None,
 ) -> UserContext | None:
-    """Verify email/password via Firebase Auth (or server-side dev directory) and return immutable UserContext.
-
-    Args:
-        username: User email address.
-        password: User password.
-        firebase_api_key: Optional Firebase Web API Key override (defaults to FIREBASE_API_KEY env var).
-        http_client: Optional HTTP client (requests or mock) for unit testing.
-
-    Returns:
-        Verified UserContext if credentials are valid and authorized, else None.
-    """
+    """Verify email/password via Firebase Auth (or server-side dev directory) and return immutable UserContext."""
     email = (username or "").strip().lower()
     if not email or not password:
         return None

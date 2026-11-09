@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from front.models import FocusContext, SupervisorTurnResult, UserContext
 from front.api_client import call_backend_supervisor_turn
-from front.auth import verify_user_credentials
+from front.auth import verify_user_credentials, request_password_reset
 
 import asyncio
 import inspect
@@ -223,9 +223,12 @@ def _get_session_user_context() -> UserContext:
     cl_user = cl.user_session.get("user")
     if cl_user and hasattr(cl_user, "metadata") and isinstance(cl_user.metadata, dict):
         meta = cl_user.metadata
+        email = meta.get("email") or getattr(cl_user, "identifier", None)
+        if not email:
+            raise RuntimeError("Authenticated user metadata is missing a valid email.")
         return UserContext(
             uid=str(meta.get("uid") or getattr(cl_user, "identifier", "session_user")),
-            email=str(meta.get("email") or getattr(cl_user, "identifier", "user@condominio.cl")),
+            email=str(email),
             role=meta.get("role", "resident"),
             unit_code=meta.get("unit_code"),
         )
@@ -446,38 +449,29 @@ async def on_message(
     )
 
 
-@cl.action_callback("clarification_choice")
-async def on_clarification_action(
-    action: Any,
-    supervisor_runner: Callable[..., Any] | None = None,
-) -> Any:
-    """Fallback handler if a clarification cl.Action callback is triggered directly."""
-    user_ctx = _get_session_user_context()
-    prior_messages = cl.user_session.get("messages") or []
-    focus = cl.user_session.get("focus") or FocusContext()
+# ============================================================================
+# Password Reset Endpoint (Custom FastAPI Route)
+# ============================================================================
 
-    payload = getattr(action, "payload", {}) or {}
-    choice = str(payload.get("choice") or getattr(action, "label", "")).strip()
-    thread_id = payload.get("thread_id")
-    if thread_id:
-        focus.active_analytics_thread_id = thread_id
+try:
+    from chainlit.server import app as _server_app
+    from fastapi import Request
+    from fastapi.responses import JSONResponse
 
-    runner = supervisor_runner or call_backend_supervisor_turn
+    @_server_app.post("/auth/reset-password")
+    async def api_reset_password(request: Request) -> JSONResponse:
+        """Handle self-service password reset requests via Firebase Auth."""
+        try:
+            body = await request.json()
+            email = str(body.get("email") or "").strip()
+            success, message = request_password_reset(email)
+            return JSONResponse(content={"success": success, "message": message})
+        except Exception as exc:
+            logger.error("Error in api_reset_password: %s", exc)
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "Solicitud inválida."},
+            )
+except Exception as _route_err:
+    logger.debug("FastAPI server app not loaded in current context: %s", _route_err)
 
-    turn_result, updated_messages, updated_focus = await _execute_turn_with_live_step(
-        runner=runner,
-        user_message=choice,
-        user_context=user_ctx,
-        messages=prior_messages,
-        focus=focus,
-        clarification_choice=choice,
-    )
-
-    cl.user_session.set("messages", updated_messages)
-    cl.user_session.set("focus", updated_focus)
-
-    return await _render_turn_result(
-        turn_result,
-        user_ctx=user_ctx,
-        supervisor_runner=supervisor_runner,
-    )
