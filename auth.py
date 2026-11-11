@@ -17,6 +17,26 @@ FIREBASE_SIGNIN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signIn
 FIREBASE_LOOKUP_URL = "https://identitytoolkit.googleapis.com/v1/accounts:lookup"
 FIREBASE_RESET_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobConfirmationCode"
 
+# Server-side in-memory token store keyed by user UID (never stored in browser cookies or UserContext)
+_SERVER_TOKEN_STORE: dict[str, str] = {}
+
+
+def set_user_id_token(uid: str, token: str) -> None:
+    """Store verified authentication token in server-side memory only."""
+    if uid and token:
+        _SERVER_TOKEN_STORE[uid] = token
+
+
+def get_user_id_token(uid: str) -> str | None:
+    """Retrieve verified authentication token from server-side memory."""
+    return _SERVER_TOKEN_STORE.get(uid)
+
+
+def clear_user_id_token(uid: str) -> None:
+    """Remove a user's authentication token from server-side memory."""
+    _SERVER_TOKEN_STORE.pop(uid, None)
+
+
 # Default local development / smoke-test accounts (server-side only; never exposed to client override)
 DEFAULT_DEV_ACCOUNTS: dict[str, dict[str, Any]] = {
     "admin@sierraplaza.cl": {
@@ -171,11 +191,17 @@ def verify_user_credentials(
                 logger.warning("Resident '%s' is missing mandatory unit_code claim.", email)
                 return None
 
+            effective_unit = unit_code if role == "resident" else None
+            if id_token:
+                set_user_id_token(uid, str(id_token))
+            else:
+                set_user_id_token(uid, f"dev-token:{uid}:{email}:{role}:{effective_unit or ''}")
+
             return UserContext(
                 uid=uid,
                 email=email,
                 role=role,
-                unit_code=unit_code if role == "resident" else None,
+                unit_code=effective_unit,
             )
         except Exception as exc:
             logger.error("Firebase authentication error for '%s': %s", email, exc)
@@ -196,11 +222,14 @@ def verify_user_credentials(
         return None
 
     try:
+        uid = str(account.get("uid") or f"dev_{email}")
+        effective_unit = unit_code if role == "resident" else None
+        set_user_id_token(uid, f"dev-token:{uid}:{email}:{role}:{effective_unit or ''}")
         return UserContext(
-            uid=str(account.get("uid") or f"dev_{email}"),
+            uid=uid,
             email=email,
             role=role,
-            unit_code=unit_code if role == "resident" else None,
+            unit_code=effective_unit,
         )
     except ValueError as exc:
         logger.warning("Invalid account configuration for '%s': %s", email, exc)

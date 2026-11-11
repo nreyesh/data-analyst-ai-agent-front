@@ -47,7 +47,7 @@ def load_profile_config() -> dict[str, Any]:
 
     # 3. Environment Variable Overrides (Highest Precedence)
     # Allows Cloud Run env vars to override YAML values if needed
-    backend_env_url = os.environ.get("BACKEND_URL")
+    backend_env_url = os.environ.get("BACKEND_URL") or os.environ.get("BACKEND_API_URL")
     if backend_env_url:
         config.setdefault("backend", {})["url"] = backend_env_url.rstrip("/")
 

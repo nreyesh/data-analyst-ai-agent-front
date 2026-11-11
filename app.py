@@ -7,6 +7,7 @@ from front.api_client import call_backend_supervisor_turn
 from front.auth import verify_user_credentials, request_password_reset
 
 import asyncio
+import base64
 from collections import defaultdict
 import inspect
 import logging
@@ -109,12 +110,14 @@ except ImportError:  # pragma: no cover - fallback shim when chainlit package is
     class _ImageShim:
         def __init__(
             self,
-            path: str,
+            path: str | None = None,
+            content: bytes | None = None,
             name: str = "chart",
             display: str = "inline",
             size: str = "large",
         ) -> None:
             self.path = path
+            self.content = content
             self.name = name
             self.display = display
             self.size = size
@@ -310,10 +313,13 @@ async def _execute_turn_with_live_step(
         if "status_callback" in sig.parameters:
             kwargs["status_callback"] = _on_status
 
-        turn_result, updated_messages, updated_focus = await asyncio.to_thread(
-            runner,
-            **kwargs,
-        )
+        if inspect.iscoroutinefunction(runner):
+            turn_result, updated_messages, updated_focus = await runner(**kwargs)
+        else:
+            turn_result, updated_messages, updated_focus = await asyncio.to_thread(
+                runner,
+                **kwargs,
+            )
 
         if turn_result.step_name:
             step.name = turn_result.step_name
@@ -400,16 +406,45 @@ async def _render_turn_result(
         return ask_msg
 
     elements: list[Any] = []
-    if turn_result.chart_file_path:
-        chart_path = Path(turn_result.chart_file_path)
-        elements.append(
-            cl.Image(
-                path=str(chart_path),
-                name="Gráfico Analítico",
-                display="inline",
-                size="large",
-            )
+    if turn_result.chart_base64 or turn_result.chart_file_path:
+        img_bytes = (
+            base64.b64decode(turn_result.chart_base64)
+            if turn_result.chart_base64
+            else None
         )
+        chart_path_str = (
+            str(Path(turn_result.chart_file_path))
+            if turn_result.chart_file_path
+            else None
+        )
+        if getattr(cl.Image, "__name__", "") == "_ImageShim":
+            elements.append(
+                cl.Image(
+                    path=chart_path_str,
+                    content=img_bytes,
+                    name="Gráfico Analítico",
+                    display="inline",
+                    size="large",
+                )
+            )
+        elif img_bytes is not None:
+            elements.append(
+                cl.Image(
+                    content=img_bytes,
+                    name="Gráfico Analítico",
+                    display="inline",
+                    size="large",
+                )
+            )
+        elif chart_path_str is not None:
+            elements.append(
+                cl.Image(
+                    path=chart_path_str,
+                    name="Gráfico Analítico",
+                    display="inline",
+                    size="large",
+                )
+            )
 
     clean_reply = re.sub(r"!\[[^\]]*\]\([^)]+\)\n?", "", turn_result.reply).strip()
     return await cl.Message(content=clean_reply, elements=elements).send()
