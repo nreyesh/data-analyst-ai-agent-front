@@ -176,7 +176,13 @@ async def send_chat_feedback(
                 json=payload,
                 headers=headers,
             )
-            return resp.status_code == 200
+            if resp.status_code == 200:
+                data = resp.json() if resp.content else {}
+                recorded = data.get("recorded", True)
+                if not recorded:
+                    logger.info("Feedback for run_id %s received by backend but not persisted to LangSmith (tracing disabled or unavailable).", run_id)
+                return True
+            return False
     except Exception as exc:
         logger.warning("Error submitting feedback to backend (fail-open): %s", exc)
         return False

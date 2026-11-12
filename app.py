@@ -109,6 +109,9 @@ except ImportError:  # pragma: no cover - fallback shim when chainlit package is
             self.tooltip = tooltip
             self.icon = icon
 
+        async def remove(self) -> bool:
+            return True
+
     class _ImageShim:
         def __init__(
             self,
@@ -191,6 +194,24 @@ except ImportError:  # pragma: no cover - fallback shim when chainlit package is
         async def update(self) -> _AskActionMessageShim:
             return self
 
+    class _AskUserMessageShim:
+        sent_asks: list[_AskUserMessageShim] = []
+        simulated_response: dict[str, Any] | None = None
+
+        def __init__(
+            self,
+            content: str,
+            timeout: int = 60,
+            raise_on_timeout: bool = False,
+        ) -> None:
+            self.content = content
+            self.timeout = timeout
+            self.raise_on_timeout = raise_on_timeout
+
+        async def send(self) -> dict[str, Any] | None:
+            _AskUserMessageShim.sent_asks.append(self)
+            return _AskUserMessageShim.simulated_response
+
     class _ChainlitModuleShim:
         User = _UserShim
         Action = _ActionShim
@@ -198,6 +219,7 @@ except ImportError:  # pragma: no cover - fallback shim when chainlit package is
         Step = _StepShim
         Message = _MessageShim
         AskActionMessage = _AskActionMessageShim
+        AskUserMessage = _AskUserMessageShim
         user_session = _UserSessionShim()
 
         @staticmethod
@@ -517,33 +539,73 @@ async def on_chat_start() -> Any:
 @cl.action_callback("feedback_up")
 async def on_feedback_up(action: Any) -> None:
     """Record user thumbs-up satisfaction rating in LangSmith."""
+    if hasattr(action, "remove"):
+        try:
+            await action.remove()
+        except Exception:
+            pass
+
     payload = getattr(action, "payload", {}) or {}
     run_id = payload.get("run_id")
     if run_id:
         try:
             user_ctx = _get_session_user_context()
-            await send_chat_feedback(run_id=run_id, score=1.0, value="positive", user_context=user_ctx)
+            await send_chat_feedback(
+                run_id=run_id,
+                score=1.0,
+                value="positive",
+                user_context=user_ctx,
+            )
         except Exception as exc:
             logger.warning("Could not submit positive feedback: %s", exc)
-    action.label = "👍 ¡Gracias por tu valoración!"
-    if hasattr(action, "update"):
-        await action.update()
+
+    await cl.Message(content="👍 ¡Gracias por tu valoración! Nos ayuda a mejorar el asistente.").send()
 
 
 @cl.action_callback("feedback_down")
 async def on_feedback_down(action: Any) -> None:
-    """Record user thumbs-down correction rating in LangSmith."""
+    """Record user thumbs-down correction rating in LangSmith with optional comment."""
+    if hasattr(action, "remove"):
+        try:
+            await action.remove()
+        except Exception:
+            pass
+
     payload = getattr(action, "payload", {}) or {}
     run_id = payload.get("run_id")
+
+    comment: str | None = None
+    try:
+        ask_response = await cl.AskUserMessage(
+            content="👎 **Comentario de retroalimentación (opcional)**:\n\n¿Podrías indicarnos qué estuvo incorrecto o qué información faltó?",
+            timeout=60,
+            raise_on_timeout=False,
+        ).send()
+        if ask_response and isinstance(ask_response, dict):
+            raw_comment = ask_response.get("output") or ask_response.get("content") or ""
+            comment = str(raw_comment).strip() or None
+    except Exception as exc:
+        logger.debug("Prompt for feedback comment ended without input: %s", exc)
+
     if run_id:
         try:
             user_ctx = _get_session_user_context()
-            await send_chat_feedback(run_id=run_id, score=0.0, value="negative", user_context=user_ctx)
+            await send_chat_feedback(
+                run_id=run_id,
+                score=0.0,
+                value="negative",
+                comment=comment,
+                user_context=user_ctx,
+            )
         except Exception as exc:
             logger.warning("Could not submit negative feedback: %s", exc)
-    action.label = "👎 Registrado para revisión del equipo"
-    if hasattr(action, "update"):
-        await action.update()
+
+    confirm_msg = (
+        "👎 **Retroalimentación registrada.** Tu comentario ha sido enviado para revisión del equipo."
+        if comment
+        else "👎 **Retroalimentación registrada.** Gracias por ayudarnos a mejorar el asistente."
+    )
+    await cl.Message(content=confirm_msg).send()
 
 
 
