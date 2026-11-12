@@ -34,12 +34,14 @@ async def call_backend_supervisor_turn(
     clarification_choice: str | None = None,
     status_callback: Callable[[str], None] | None = None,
     id_token: str | None = None,
+    conversation_id: str | None = None,
 ) -> tuple[SupervisorTurnResult, list[Any], FocusContext]:
     """Send user message, context, and server-side Bearer token to the Backend Cloud Run service over HTTP."""
     if status_callback:
         status_callback("Conectando con el agente analista...")
 
     payload = {
+        "conversation_id": conversation_id,
         "user_message": user_message,
         "user_context": user_context.model_dump(),
         "messages": [
@@ -51,6 +53,7 @@ async def call_backend_supervisor_turn(
         "focus": focus.model_dump(),
         "clarification_choice": clarification_choice,
     }
+
 
     token = id_token if id_token is not None else get_user_id_token(user_context.uid)
     if not token:
@@ -117,6 +120,8 @@ async def call_backend_supervisor_turn(
             data = resp.json()
 
             turn_result = SupervisorTurnResult(**data.get("turn_result", {}))
+            if not turn_result.run_id and data.get("run_id"):
+                turn_result.run_id = data.get("run_id")
             updated_messages = data.get(
                 "messages",
                 messages
@@ -138,3 +143,41 @@ async def call_backend_supervisor_turn(
             step_detail="El backend no respondió en el tiempo esperado.",
         )
         return error_result, messages, focus
+
+
+async def send_chat_feedback(
+    run_id: str,
+    score: float,
+    key: str = "user_score",
+    value: str | None = None,
+    comment: str | None = None,
+    user_context: UserContext | None = None,
+    id_token: str | None = None,
+) -> bool:
+    """Send user thumbs up/down feedback and optional comment to the backend LangSmith proxy."""
+    backend_url = get_backend_url()
+    token = id_token
+    if not token and user_context:
+        token = get_user_id_token(user_context.uid)
+        if not token:
+            token = f"dev-token:{user_context.uid}:{user_context.email}:{user_context.role}:{user_context.unit_code or ''}"
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    payload = {
+        "run_id": run_id,
+        "key": key,
+        "score": score,
+        "value": value,
+        "comment": comment,
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                f"{backend_url}/api/chat/feedback",
+                json=payload,
+                headers=headers,
+            )
+            return resp.status_code == 200
+    except Exception as exc:
+        logger.warning("Error submitting feedback to backend (fail-open): %s", exc)
+        return False
+

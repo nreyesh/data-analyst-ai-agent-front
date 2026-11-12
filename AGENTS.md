@@ -1,8 +1,19 @@
 # Frontend Engineering, Security & Agent Architecture Guide
 
-This document defines the architectural guidelines, authentication flows, environment profiling standards, and GitFlow practices for the **Building Analytics Frontend** service (`nreyesh/front`).
+This document defines the architectural guidelines, authentication flows, environment profiling standards, and security practices for the **Building Analytics Frontend** service (`nreyesh/front`).
 
 Any human engineer or AI coding assistant modifying this repository must adhere to the patterns documented below.
+
+---
+
+## 0. ⛔ Absolute Agent Guardrails (Never Violate)
+
+1. **NO GIT COMMITS OR PUSHES:**
+   * AI agents are **STRICTLY FORBIDDEN** from running `git commit`, `git push`, or modifying git history. Only the human engineer commits and pushes.
+2. **ZERO SECRETS IN GIT:**
+   * Never commit Firebase Web API keys, admin keys, or JWT tokens to Git.
+3. **ZERO DIRECT BACKEND / DB IMPORTS:**
+   * Never import backend or agent modules into this repository. Communication occurs strictly over HTTPS REST APIs.
 
 ---
 

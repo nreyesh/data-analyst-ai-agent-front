@@ -10,12 +10,13 @@ import sys
 from pathlib import Path
 
 try:
-    from front.api_client import call_backend_supervisor_turn
+    from front.api_client import call_backend_supervisor_turn, send_chat_feedback
     from front.models import FocusContext, UserContext
 except ModuleNotFoundError:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-    from front.api_client import call_backend_supervisor_turn
+    from front.api_client import call_backend_supervisor_turn, send_chat_feedback
     from front.models import FocusContext, UserContext
+
 
 
 class TestApiClientSanitization(unittest.IsolatedAsyncioTestCase):
@@ -81,6 +82,76 @@ class TestApiClientSanitization(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(result.step_name, "Sesión expirada")
             self.assertIn("expirado", result.reply)
+
+    async def test_call_backend_supervisor_turn_passes_conversation_id_and_parses_run_id(self) -> None:
+        """Verify call_backend_supervisor_turn transmits conversation_id and populates turn_result.run_id."""
+        user_ctx = UserContext(
+            uid="uid_test",
+            email="test@sierraplaza.cl",
+            role="resident",
+            unit_code="101",
+        )
+        focus = FocusContext()
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_post.return_value = httpx.Response(
+                200,
+                json={
+                    "turn_result": {
+                        "reply": "Respuesta correcta",
+                        "route": "direct_response",
+                        "run_id": "test-run-id-abc",
+                    },
+                    "messages": [],
+                    "focus": {},
+                    "conversation_id": "conv-uuid-1111",
+                    "run_id": "test-run-id-abc",
+                },
+                request=httpx.Request("POST", "http://localhost:8000/api/chat/turn"),
+            )
+
+            result, _, _ = await call_backend_supervisor_turn(
+                user_message="Hola",
+                user_context=user_ctx,
+                messages=[],
+                focus=focus,
+                conversation_id="conv-uuid-1111",
+            )
+
+            self.assertEqual(result.reply, "Respuesta correcta")
+            self.assertEqual(result.run_id, "test-run-id-abc")
+            # Verify payload contained conversation_id
+            call_kwargs = mock_post.call_args.kwargs
+            sent_payload = call_kwargs.get("json", {})
+            self.assertEqual(sent_payload.get("conversation_id"), "conv-uuid-1111")
+
+    async def test_send_chat_feedback(self) -> None:
+        """Verify send_chat_feedback dispatches POST request with run_id and score."""
+        user_ctx = UserContext(
+            uid="uid_test",
+            email="test@sierraplaza.cl",
+            role="resident",
+            unit_code="101",
+        )
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_post.return_value = httpx.Response(
+                200,
+                json={"success": True, "run_id": "test-run-123"},
+                request=httpx.Request("POST", "http://localhost:8000/api/chat/feedback"),
+            )
+
+            ok = await send_chat_feedback(
+                run_id="test-run-123",
+                score=1.0,
+                value="positive",
+                comment="Buena respuesta",
+                user_context=user_ctx,
+            )
+            self.assertTrue(ok)
+            call_kwargs = mock_post.call_args.kwargs
+            self.assertEqual(call_kwargs["json"]["run_id"], "test-run-123")
+            self.assertEqual(call_kwargs["json"]["score"], 1.0)
+
 
 
 if __name__ == "__main__":

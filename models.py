@@ -69,6 +69,8 @@ class SupervisorTurnResult(BaseModel):
     clarification_prompt: Optional[str] = None
     candidate_options: list[str] = Field(default_factory=list)
     thread_id: Optional[str] = None
+    run_id: Optional[str] = None
     focus: FocusContext = Field(default_factory=FocusContext)
+
     security_violation_type: Optional[str] = None
     security_violation_reason: Optional[str] = None

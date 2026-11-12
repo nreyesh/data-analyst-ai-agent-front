@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from front.models import FocusContext, SupervisorTurnResult, UserContext
-from front.api_client import call_backend_supervisor_turn
+from front.api_client import call_backend_supervisor_turn, send_chat_feedback
 from front.auth import verify_user_credentials, request_password_reset
 
 import asyncio
@@ -16,6 +16,8 @@ import re
 import sys
 import time
 from typing import Any, Callable
+import uuid
+
 
 # Ensure repository root is on sys.path
 _PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
@@ -312,6 +314,10 @@ async def _execute_turn_with_live_step(
         }
         if "status_callback" in sig.parameters:
             kwargs["status_callback"] = _on_status
+        conv_id = cl.user_session.get("conversation_id")
+        if conv_id and ("conversation_id" in sig.parameters or any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())):
+            kwargs["conversation_id"] = conv_id
+
 
         if inspect.iscoroutinefunction(runner):
             turn_result, updated_messages, updated_focus = await runner(**kwargs)
@@ -449,7 +455,26 @@ async def _render_turn_result(
     clean_reply = re.sub(r"!\[[^\]]*\]\([^)]+\)\n?", "", turn_result.reply).strip()
     if elements:
         clean_reply = f"{clean_reply}\n\n![Gráfico Analítico]"
-    return await cl.Message(content=clean_reply, elements=elements).send()
+
+    actions: list[Any] = []
+    if turn_result.run_id and getattr(cl, "Action", None):
+        actions.append(
+            cl.Action(
+                name="feedback_up",
+                label="👍 Útil",
+                payload={"run_id": turn_result.run_id},
+            )
+        )
+        actions.append(
+            cl.Action(
+                name="feedback_down",
+                label="👎 Incorrecto",
+                payload={"run_id": turn_result.run_id},
+            )
+        )
+
+    return await cl.Message(content=clean_reply, elements=elements, actions=actions).send()
+
 
 
 # ============================================================================
@@ -483,9 +508,43 @@ async def on_chat_start() -> Any:
     cl.user_session.set("user_context", user_ctx)
     cl.user_session.set("messages", [])
     cl.user_session.set("focus", FocusContext())
+    cl.user_session.set("conversation_id", str(uuid.uuid4()))
 
     welcome_md = build_welcome_markdown(user_ctx)
     return await cl.Message(content=welcome_md).send()
+
+
+@cl.action_callback("feedback_up")
+async def on_feedback_up(action: Any) -> None:
+    """Record user thumbs-up satisfaction rating in LangSmith."""
+    payload = getattr(action, "payload", {}) or {}
+    run_id = payload.get("run_id")
+    if run_id:
+        try:
+            user_ctx = _get_session_user_context()
+            await send_chat_feedback(run_id=run_id, score=1.0, value="positive", user_context=user_ctx)
+        except Exception as exc:
+            logger.warning("Could not submit positive feedback: %s", exc)
+    action.label = "👍 ¡Gracias por tu valoración!"
+    if hasattr(action, "update"):
+        await action.update()
+
+
+@cl.action_callback("feedback_down")
+async def on_feedback_down(action: Any) -> None:
+    """Record user thumbs-down correction rating in LangSmith."""
+    payload = getattr(action, "payload", {}) or {}
+    run_id = payload.get("run_id")
+    if run_id:
+        try:
+            user_ctx = _get_session_user_context()
+            await send_chat_feedback(run_id=run_id, score=0.0, value="negative", user_context=user_ctx)
+        except Exception as exc:
+            logger.warning("Could not submit negative feedback: %s", exc)
+    action.label = "👎 Registrado para revisión del equipo"
+    if hasattr(action, "update"):
+        await action.update()
+
 
 
 @cl.on_message
