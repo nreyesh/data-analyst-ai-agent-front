@@ -55,6 +55,33 @@ class TestApiClientSanitization(unittest.IsolatedAsyncioTestCase):
             self.assertNotIn("http", result.reply)
             self.assertNotIn("Client error", result.reply)
 
+    async def test_non_json_401_handled_gracefully(self) -> None:
+        """Ensure plain text 401 response (e.g. from Cloud Run proxy) does not crash with JSONDecodeError."""
+        user_ctx = UserContext(
+            uid="uid_test",
+            email="test@sierraplaza.cl",
+            role="resident",
+            unit_code="101",
+        )
+        focus = FocusContext()
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_post.return_value = httpx.Response(
+                401,
+                text="The request was not authorized to invoke this service.",
+                request=httpx.Request("POST", "https://internal-backend.run.app/api/chat/turn"),
+            )
+
+            result, _, _ = await call_backend_supervisor_turn(
+                user_message="Hola",
+                user_context=user_ctx,
+                messages=[],
+                focus=focus,
+            )
+
+            self.assertEqual(result.step_name, "Sesión expirada")
+            self.assertIn("expirado", result.reply)
+
 
 if __name__ == "__main__":
     unittest.main()

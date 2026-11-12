@@ -69,7 +69,13 @@ async def call_backend_supervisor_turn(
 
             if resp.status_code == 401:
                 clear_user_id_token(user_context.uid)
-                detail = resp.json().get("detail", {}) if resp.content else {}
+                detail: dict[str, Any] = {}
+                if resp.content:
+                    try:
+                        parsed = resp.json()
+                        detail = parsed.get("detail", {}) if isinstance(parsed, dict) else {}
+                    except Exception:
+                        pass
                 msg = (
                     detail.get("message")
                     if isinstance(detail, dict)
@@ -84,7 +90,13 @@ async def call_backend_supervisor_turn(
                 return expired_result, messages, focus
 
             if resp.status_code == 403:
-                detail = resp.json().get("detail", {}) if resp.content else {}
+                detail = {}
+                if resp.content:
+                    try:
+                        parsed = resp.json()
+                        detail = parsed.get("detail", {}) if isinstance(parsed, dict) else {}
+                    except Exception:
+                        pass
                 if isinstance(detail, dict):
                     msg = detail.get("message") or (
                         f"⛔ **Cuenta bloqueada por 24 horas.**\n\n"
