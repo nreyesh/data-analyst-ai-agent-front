@@ -15,7 +15,7 @@ logger = logging.getLogger("front.auth")
 
 FIREBASE_SIGNIN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
 FIREBASE_LOOKUP_URL = "https://identitytoolkit.googleapis.com/v1/accounts:lookup"
-FIREBASE_RESET_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobConfirmationCode"
+FIREBASE_RESET_PASSWORD_URL = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode"
 
 # Server-side in-memory token store keyed by user UID (never stored in browser cookies or UserContext)
 _SERVER_TOKEN_STORE: dict[str, str] = {}
@@ -113,8 +113,13 @@ def request_password_reset(
         if res.status_code == 200:
             return True, "Se ha enviado un correo con las instrucciones para restablecer su contraseña. Por favor revise su bandeja de entrada o spam."
         else:
-            err_data = res.json() if res.content else {}
-            err_msg = err_data.get("error", {}).get("message", "UNKNOWN_ERROR")
+            err_msg = f"HTTP_{res.status_code}"
+            if res.content:
+                try:
+                    err_data = res.json()
+                    err_msg = err_data.get("error", {}).get("message", err_msg)
+                except Exception:
+                    err_msg = f"NON_JSON_RESPONSE_{res.status_code}"
             logger.warning("Firebase password reset failed for '%s': %s", clean_email, err_msg)
             # For security and privacy, avoid revealing if an email exists
             return True, "Si el correo está registrado en la Comunidad Sierra Plaza, recibirá un enlace para restablecer su contraseña."
