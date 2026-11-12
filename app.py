@@ -212,6 +212,13 @@ except ImportError:  # pragma: no cover - fallback shim when chainlit package is
             _AskUserMessageShim.sent_asks.append(self)
             return _AskUserMessageShim.simulated_response
 
+    class _ContextShim:
+        class _EmitterShim:
+            async def task_end(self) -> None:
+                pass
+
+        emitter = _EmitterShim()
+
     class _ChainlitModuleShim:
         User = _UserShim
         Action = _ActionShim
@@ -221,6 +228,7 @@ except ImportError:  # pragma: no cover - fallback shim when chainlit package is
         AskActionMessage = _AskActionMessageShim
         AskUserMessage = _AskUserMessageShim
         user_session = _UserSessionShim()
+        context = _ContextShim()
 
         @staticmethod
         def password_auth_callback(fn: Callable[..., Any]) -> Callable[..., Any]:
@@ -586,6 +594,19 @@ async def on_feedback_down(action: Any) -> None:
             comment = str(raw_comment).strip() or None
     except Exception as exc:
         logger.debug("Prompt for feedback comment ended without input: %s", exc)
+    finally:
+        # Crucial: AskUserMessage leaves the emitter in task_start state.
+        # Since action callbacks run with with_task=False, we must explicitly call task_end()
+        # to clear the spinning indicator and prevent the UI from freezing.
+        try:
+            if hasattr(cl, "context") and hasattr(cl.context, "emitter"):
+                emitter = cl.context.emitter
+                if hasattr(emitter, "task_end"):
+                    res = emitter.task_end()
+                    if inspect.isawaitable(res):
+                        await res
+        except Exception as emitter_err:
+            logger.debug("Could not emit task_end: %s", emitter_err)
 
     if run_id:
         try:

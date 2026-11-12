@@ -60,6 +60,35 @@ class TestChatFeedbackActions(unittest.IsolatedAsyncioTestCase):
             mock_msg_cls.assert_called_once()
             mock_msg_instance.send.assert_awaited_once()
 
+    async def test_feedback_down_clears_task_to_prevent_freezing(self) -> None:
+        """Verify emitter.task_end is invoked so UI task running spinner does not get stuck."""
+        action = MagicMock()
+        action.name = "feedback_down"
+        action.payload = {"run_id": "run-uuid-task-end-test"}
+        action.remove = AsyncMock()
+
+        user_ctx = UserContext(
+            uid="usr-3",
+            email="resident@sierraplaza.cl",
+            role="resident",
+            unit_code="B-504",
+        )
+
+        mock_ask_instance = MagicMock()
+        mock_ask_instance.send = AsyncMock(return_value={"output": "comentario"})
+
+        mock_emitter = MagicMock()
+        mock_emitter.task_end = AsyncMock()
+
+        with patch("front.app._get_session_user_context", return_value=user_ctx), \
+             patch("front.app.cl.AskUserMessage", return_value=mock_ask_instance), \
+             patch("front.app.cl.context", MagicMock(emitter=mock_emitter)), \
+             patch("front.app.send_chat_feedback", new_callable=AsyncMock), \
+             patch("front.app.cl.Message", return_value=MagicMock(send=AsyncMock())):
+
+            await on_feedback_down(action)
+            mock_emitter.task_end.assert_awaited_once()
+
     async def test_feedback_up_sends_positive_rating_and_removes_action(self) -> None:
         """Verify hitting thumbs-up sends score 1.0, removes action, and shows confirmation."""
         action = MagicMock()
