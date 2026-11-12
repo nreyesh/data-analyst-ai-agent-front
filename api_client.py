@@ -120,7 +120,7 @@ async def call_backend_supervisor_turn(
     except Exception as exc:
         logger.error("Error calling backend service at %s: %s", backend_url, exc)
         error_result = SupervisorTurnResult(
-            reply=f"⚠️ No pudimos comunicarnos con el servidor analista ({exc}). Por favor, intenta nuevamente en unos momentos.",
+            reply="⚠️ No pudimos comunicarnos con el servidor analista. Por favor, intenta nuevamente en unos momentos.",
             route="direct_response",
             step_name="Error de conexión",
             step_detail="El backend no respondió en el tiempo esperado.",
