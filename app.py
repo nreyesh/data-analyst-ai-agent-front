@@ -436,7 +436,7 @@ async def _render_turn_result(
                     size="large",
                 )
             )
-        elif chart_path_str is not None:
+        elif chart_path_str is not None and Path(chart_path_str).is_file():
             elements.append(
                 cl.Image(
                     path=chart_path_str,
@@ -447,6 +447,8 @@ async def _render_turn_result(
             )
 
     clean_reply = re.sub(r"!\[[^\]]*\]\([^)]+\)\n?", "", turn_result.reply).strip()
+    if elements:
+        clean_reply = f"{clean_reply}\n\n![Gráfico Analítico]"
     return await cl.Message(content=clean_reply, elements=elements).send()
 
 
